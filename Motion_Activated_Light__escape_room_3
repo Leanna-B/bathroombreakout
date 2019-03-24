@@ -1,0 +1,35 @@
+const int led = 13;
+const int trigPin = 6;
+const int echoPin = 5;
+const int leadOnTime = 1000;
+const int trigDistance = 20;
+
+int duration;
+int distance;
+
+void setup() {
+  Serial.begin (9600);
+  pinMode(led, OUTPUT);
+  pinMode(trigPin,OUTPUT);
+  pinMode (echoPin, INPUT);
+}
+
+void loop() {
+  long duration, distance;
+  digitalWrite(trigPin,LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration/2)/29.1;
+  if (distance < 10)
+  { digitalWrite(led,HIGH);
+  }
+  else{
+    digitalWrite(led,LOW);
+  }
+  Serial.print(distance);
+  Serial.println("cm");
+  delay(500);
+}
