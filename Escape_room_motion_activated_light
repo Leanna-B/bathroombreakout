@@ -1,0 +1,48 @@
+# include <LiquidCrystal.h>
+
+LiquidCrystal lcd (1, 2, 4, 5, 6, 7);
+
+const int trigPin = 6;
+const int echoPin = 5;
+const int bulb = 9;
+
+long duration;
+int distanceCm, distanceInch;
+
+void setup() {
+ pinMode (trigPin, OUTPUT);
+ pinMode (echoPin, INPUT);
+ pinMode (bulb, OUTPUT);
+
+ duration = pulseIn (echoPin, HIGH);
+ distanceCm= duration*0.034/2;
+ distanceInch = duration*0.0133/2;
+}
+
+void loop() {
+  int duration, distance;
+  
+  digitalWrite (trigPin, LOW);
+  delayMicroseconds(2);
+  
+  digitalWrite (trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn (echoPin, HIGH);
+  distanceCm= duration*0.034/2;
+  distanceInch = duration*0.0133/2;
+
+  if (distance < 13)
+  {
+    Light();
+  }
+  Serial.print(distance);
+  Serial.print("CM");
+  delay(500);
+}
+void Light()
+{digitalWrite(bulb,HIGH);
+delay (15000);
+digitalWrite(bulb,LOW);
+}
