@@ -1,0 +1,732 @@
+#include <Adafruit_NeoPixel.h> //neopixel library
+#define PIN 13 // defines arduino pin
+#define NUM_LEDS 5
+
+#include <Wire.h> //This library allows communication with I2C / TWI devices (the arduino & servo driver).
+//On the Arduino boards with the R3 layout (1.0 pinout), the SDA (data line) and SCL (clock line) are on the pin headers close to the AREF pin. 
+
+#include <math.h> //The library includes mathematical functions for manipulating floating point numbers. 
+
+#include <Adafruit_PWMServoDriver.h> //Library for servo driver
+#include "PCA9685.h" //Library for servo driver PCA9685
+uint8_t servonum = 0;
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+//all button related variables these will be used to track consecutive presses and timing.
+const int buttonPin1 = 0;
+const int buttonPin2 = 1;
+const int buttonPin3 = 2;
+const int buttonPin4 = 3;
+const int buttonPin5 = 4;
+
+int lastState = 0;                //used to track complete button press + release
+int timeInterval = 0;             //used to chain consecutive presses, reset chains and confirm solution
+int numPressed = 0;               //used to track the number of consective pressed in the current chain
+
+//stage solutions
+int stage1_1 = 4;
+int stage1_2 = 4;
+int stage1_3 = 4;
+int stage1_4 = 4;
+int stage1_5 = 4;
+
+int stage2_1 = 4;
+int stage2_2 = 4;
+int stage2_3 = 4;
+int stage2_4 = 4;
+int stage2_5 = 4;
+
+//stage 1 checkpoints
+bool clear1_1 = false;
+bool clear1_2 = false;
+bool clear1_3 = false;
+bool clear1_4 = false;
+bool clear1_5 = false;
+
+//stage 2 checkpoints
+bool clear2_1 = false;
+bool clear2_2 = false;
+bool clear2_3 = false;
+bool clear2_4 = false;
+bool clear2_5 = false;
+
+//temp ultrasonic checkpoint
+bool clear_ultra = false;
+
+//temp puzzle checkpoint
+bool clear_temp = false;
+
+//LED timing variables
+int led_state = 0;                //used to track if the Neopixel is HIGH or LOW
+int led_timer = 0;                //used as a pseudo delay()
+int led_curr = 0;                 //used to track number of blinks 
+
+//Temp sensor variables
+const int B = 4275;               // B value of the thermistor
+const int pinTempSensor1 = A0;    // Grove - Temperature Sensor connect to A0
+const int pinTempSensor2 = A1;
+
+//Ultrasonic sensor variables
+const int trigPin = 6;
+const int trigPin2 = 5; 
+const int echoPin = A2;
+long duration, duration2, cm, cm2;
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(5, 8, NEO_GRB + NEO_KHZ800);
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+void part1_1(){
+
+  while (clear1_1 == false) {
+    
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(0, 0, 255, 0);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(0, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage1_1){
+      Serial.println("LED waiting"); 
+      led_timer = -10000;
+      led_curr = 0;
+    }
+  
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin1) == 1) && (lastState == 0)) {
+      Serial.println("pressed down");
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin1) == 0) && (lastState == 1)) {
+      Serial.println("button released");
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage1_1){
+          numPressed = 0;
+          clear1_1 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(0, 0, 255, 0);
+  pixels.show();
+}
+
+void part1_2(){
+  while (clear1_2 == false) {
+    
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(1, 255, 255, 0);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(1, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage1_2){
+      Serial.println("LED waiting"); 
+      led_timer = -10000;
+      led_curr = 0;
+    }
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin2) == 1) && (lastState == 0)) {
+      Serial.println("pressed down");
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin2) == 0) && (lastState == 1)) {
+      Serial.println("button released");
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage1_2){
+          numPressed = 0;
+          clear1_2 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(1, 255, 255, 0);
+  pixels.show();
+}
+
+void part1_3(){
+  while (clear1_3 == false) {
+
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(2, 255, 0, 0);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(2, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage1_3){
+      led_timer = -10000;
+      led_curr = 0;
+    }
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin3) == 1) && (lastState == 0)) {
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin3) == 0) && (lastState == 1)) {
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage1_3){
+          numPressed = 0;
+          clear1_3 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(2, 255, 0, 0);
+  pixels.show();
+}
+
+void part1_4(){
+  while (clear1_4 == false) {
+
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(3, 255, 255, 255);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(3, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage1_4){
+      led_timer = -10000;
+      led_curr = 0;
+    }
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin4) == 1) && (lastState == 0)) {
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin4) == 0) && (lastState == 1)) {
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage1_4){
+          numPressed = 0;
+          clear1_4 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(3, 255, 255, 255);
+  pixels.show();
+}
+
+void part1_5(){
+  while (clear1_5 == false) {
+
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(4, 0, 0, 255);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(4, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage1_5){
+      led_timer = -10000;
+      led_curr = 0;
+    }
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin5) == 1) && (lastState == 0)) {
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin5) == 0) && (lastState == 1)) {
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage1_5){
+          numPressed = 0;
+          clear1_5 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(4, 0, 0, 255);
+  pixels.show();
+}
+
+void part2_1(){
+
+  while (clear2_1 == false) {
+    
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(0, 255, 255, 0);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(0, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage2_1){
+      Serial.println("LED waiting"); 
+      led_timer = -10000;
+      led_curr = 0;
+    }
+  
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin1) == 1) && (lastState == 0)) {
+      Serial.println("pressed down");
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin1) == 0) && (lastState == 1)) {
+      Serial.println("button released");
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage2_1){
+          numPressed = 0;
+          clear2_1 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(0, 255, 255, 0);
+  pixels.show();
+}
+
+void part2_2(){
+
+  while (clear2_2 == false) {
+    
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(1, 255, 255, 255);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(1, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage2_2){
+      Serial.println("LED waiting"); 
+      led_timer = -10000;
+      led_curr = 0;
+    }
+  
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin1) == 1) && (lastState == 0)) {
+      Serial.println("pressed down");
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin1) == 0) && (lastState == 1)) {
+      Serial.println("button released");
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage2_2){
+          numPressed = 0;
+          clear2_2 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(1, 255, 255, 255);
+  pixels.show();
+}
+
+void part2_3(){
+
+  while (clear2_3 == false) {
+    
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(2, 0, 0, 255);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(2, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage2_3){
+      Serial.println("LED waiting"); 
+      led_timer = -10000;
+      led_curr = 0;
+    }
+  
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin1) == 1) && (lastState == 0)) {
+      Serial.println("pressed down");
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin1) == 0) && (lastState == 1)) {
+      Serial.println("button released");
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage2_3){
+          numPressed = 0;
+          clear2_3 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(2, 0, 0, 255);
+  pixels.show();
+}
+
+void part2_4(){
+  while (clear2_4 == false) {
+
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(3, 255, 0, 0);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(3, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage2_4){
+      led_timer = -10000;
+      led_curr = 0;
+    }
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin4) == 1) && (lastState == 0)) {
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin4) == 0) && (lastState == 1)) {
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage2_4){
+          numPressed = 0;
+          clear2_4 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(3, 255, 0, 0);
+  pixels.show();
+}
+
+void part2_5(){
+  while (clear2_5 == false) {
+
+    led_timer = led_timer + 1;
+    //Serial.println(led_timer);
+    //Serial.println(led_curr);
+    if ((led_timer > 5000) && (led_state == 0)){
+      led_state = 1;
+      led_timer = 0;
+      pixels.setPixelColor(4, 0, 255, 0);
+      pixels.show();
+    }
+    if ((led_timer > 5000) && (led_state == 1)){
+      led_state = 0;
+      led_timer = 0;
+      led_curr = led_curr + 1;
+      pixels.setPixelColor(4, 0, 0, 0);
+      pixels.show();
+    }
+
+    if (led_curr == stage2_5){
+      led_timer = -10000;
+      led_curr = 0;
+    }
+    
+    Serial.println(numPressed);
+    //Serial.println(timeInterval);
+
+    if ((digitalRead(buttonPin5) == 1) && (lastState == 0)) {
+      lastState = 1;
+    }
+    if ((digitalRead(buttonPin5) == 0) && (lastState == 1)) {
+      lastState = 0;
+      numPressed = numPressed + 1;
+      timeInterval = 0;
+    }
+    if (numPressed > 0) {
+      timeInterval = timeInterval + 1;
+      if (timeInterval > 10000) {
+        if (numPressed == stage2_5){
+          numPressed = 0;
+          clear2_5 = true;
+        }
+        else {
+          numPressed = 0;
+          timeInterval = 0;
+        }
+      }
+    }
+  }
+  pixels.setPixelColor(4, 0, 255, 0);
+  pixels.show();
+}
+
+void temp_puzzle(){
+
+  while (clear_temp == false){
+    int a = analogRead(pinTempSensor1 );
+    int c = analogRead (pinTempSensor2);
+  
+    float R = 1023.0 / ((float)a) - 1.0;
+    float S = 1023.0 / ((float)c) - 1.0;
+  
+    R = 100000.0 * R;
+    S = 100000.0 * S;
+  
+    float temperature = 1.0 / (log(R / 100000.0) / B + 1 / 298.15) - 273.15; //convert to temperature via datasheet ;
+    float temperature2 = 1.0 / (log(S / 100000.0) / B + 1 / 298.15) - 273.15; //convert to temperature via datasheet ;
+  
+    //Serial.print("temperature = ");
+    Serial.println(temperature);
+    Serial.println(temperature2);
+  
+    //if the analog value is high enough, turn on the LED:
+    if (temperature > 27 && temperature2 > 27){ //if the sensors both reach the desired temp, move on to part 2 of the light puzzle, I can add a timer to require both sensors to maintain the desire temp for a period of time before it's considered solved if needed.
+      clear_temp = true;
+    }
+  }
+}
+
+void ultra_puzzle(){
+  
+  int ultra_time = 0;
+
+  while (clear_ultra == false){
+    digitalWrite(trigPin, LOW);
+    digitalWrite (trigPin2, LOW);
+    delayMicroseconds(5);
+    digitalWrite(trigPin, HIGH);
+    digitalWrite(trigPin2, HIGH);
+    delayMicroseconds(15);
+    digitalWrite(trigPin, LOW);
+    digitalWrite(trigPin2, LOW);
+
+    duration = pulseIn(echoPin, HIGH);
+    cm = (duration/2) / 29.1;
+    Serial.println(cm);
+
+    if (cm > 20){ //if both sensors give readings above 20cm then ultra_time will keep increasing until the puzzle is cleared
+    ultra_time = ultra_time + 1;
+    }else{
+      ultra_time = 0;
+    }
+
+    if (ultra_time > 50){ //change this value to increase or decrease the time both sensors need to be above 20cm
+    clear_ultra = true;
+    }
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////
+
+void setup() {
+  pixels.begin(); // This initializes the NeoPixel library.
+  Serial.begin(9600); //This initializes the serial monitor for debugging
+  pinMode(buttonPin1, INPUT);
+  pinMode(buttonPin2, INPUT);
+  pinMode(buttonPin3, INPUT);
+  pinMode(trigPin,OUTPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  pwm.begin();
+  pwm.setPWMFreq(50);
+}
+
+void loop() {
+  ultra_puzzle();
+  part1_1();
+  part1_2();
+  part1_3();
+  part1_4();
+  part1_5();
+  pwm.setPWM(0,0,150); //servo key unlock
+  pwm.setPWM(1,0,150); //servo key unlock
+  temp_puzzle();
+  part2_1();
+  part2_2();
+  part2_3();
+  part2_4();
+  part2_5();
+  pwm.setPWM(2,0,150); //servo key unlock
+  pwm.setPWM(3,0,150); //servo key unlock
+  pwm.setPWM(4,0,150); //servo key unlock
+  }
+  
